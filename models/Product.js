@@ -4,7 +4,19 @@ const Product = {
     create(data, callback) {
         const isAvailable = data.isAvailable !== undefined ? data.isAvailable : true;
         const sql = 'INSERT INTO products (name, description, price, subcategory, category, imageUrl, rating, isAvailable) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-        db.run(sql, [data.name, data.description, data.price, data.subcategory, data.category, data.imageUrl, data.rating, isAvailable], callback);
+        db.run(sql, [data.name, data.description, data.price, data.subcategory, data.category, data.imageUrl, 1, isAvailable], callback);
+    },
+    createMany(products, callback) {
+        const sql = 'INSERT INTO products (name, description, price, subcategory, category, imageUrl, rating) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        let completed = 0;
+        products.forEach((product) => {
+            db.run(sql, [product.name, product.description, product.price, product.subcategory, product.category, product.imageUrl, product.rating], (err) => {
+                completed++;
+                if (completed === products.length) {
+                    callback(err);
+                }
+            });
+        });
     },
     getAll(callback) {
         db.all('SELECT * FROM products', callback);

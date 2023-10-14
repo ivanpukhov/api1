@@ -7,6 +7,18 @@ const productController = {
             res.status(200).json({ message: 'Product added successfully' });
         });
     },
+
+    createProducts(req, res) {
+        const products = req.body;
+        if (!Array.isArray(products) || products.length === 0) {
+            return res.status(400).json({ error: 'No products provided' });
+        }
+
+        Product.createMany(products, function (err) {
+            if (err) return res.status(500).json({ error: 'Failed to add products' });
+            res.status(200).json({ message: 'Products added successfully' });
+        });
+    },
     getAllProducts(req, res) {
         Product.getAll(function(err, products) {
             if (err) return res.status(500).json({ error: 'Failed to fetch products' });
