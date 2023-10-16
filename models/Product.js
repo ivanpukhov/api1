@@ -1,5 +1,6 @@
-
 const db = require('../config/database');
+const esClient = require('../config/elasticsearch'); // Подключение Elasticsearch клиента
+
 const Product = {
     create(data, callback) {
         const isAvailable = data.isAvailable !== undefined ? data.isAvailable : true;
@@ -37,10 +38,109 @@ const Product = {
     getTopProductsByCategory(category, callback) {
         db.all('SELECT * FROM products WHERE category = ? ORDER BY rating DESC LIMIT 12', [category], callback);
     },
+    getCategoryProductsByCategory(category, callback) {
+        db.all('SELECT * FROM products WHERE category = ? ORDER BY rating DESC ', [category], callback);
+    },
+    // Elasticsearch methods
+    async indexProduct(product) {
+        await esClient.index({
+            index: 'products',
+            id: product.id,
+            body: {
+                name: product.name,
+                description: product.description,
+                category: product.category,
+                subcategory: product.subcategory
+            }
+        });
+    },
+    async deleteFromIndex(id) {
+        await esClient.delete({
+            index: 'products',
+            id: id
+        });
+    },
+
+
+    async  search(query) {
+        try {
+            console.log("Elasticsearch query being sent:", { index: 'products', q: query });
+            const response = await esClient.search({
+                index: 'products',
+                body: {
+                    query: {
+                        multi_match: {
+                            query: query,
+                            fields: ['name^5', 'description'],
+                            fuzziness: 'AUTO'
+                        }
+                    },
+                    "size": 50
+
+                }
+            });
+
+            console.log("Elasticsearch raw response:", JSON.stringify(response, null, 2));
+
+            if (response && response.hits && response.hits.hits) {
+                return response.hits.hits.map(hit => hit._source);
+            }
+
+            console.log("No hits in Elasticsearch response");
+            return [];
+        } catch (error) {
+            console.error("An error occurred during the Elasticsearch search:", error);
+            throw error;
+        }
+    },
+
+    async searchInCategory(query, category) {
+        try {
+            console.log("Elasticsearch query being sent:", { index: 'products', q: query, category: category });
+            const response = await esClient.search({
+                index: 'products',
+                body: {
+                    query: {
+                        bool: {
+                            must: [
+                                {
+                                    multi_match: {
+                                        query: query,
+                                        fields: ['name^5', 'description'],
+                                        fuzziness: 'AUTO'
+                                    }
+                                }
+                            ],
+                            filter: [
+                                {
+                                    term: { "category": category }
+                                }
+                            ]
+                        }
+                    },
+                    "size": 50
+                }
+            });
+
+            console.log("Elasticsearch raw response:", JSON.stringify(response, null, 2));
+
+            if (response && response.hits && response.hits.hits) {
+                return response.hits.hits.map(hit => hit._source);
+            }
+
+            console.log("No hits in Elasticsearch response");
+            return [];
+        } catch (error) {
+            console.error("An error occurred during the Elasticsearch search:", error);
+            throw error;
+        }
+    }
+
+
+
 
 
 
 };
-
 
 module.exports = Product;
