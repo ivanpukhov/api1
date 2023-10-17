@@ -23,16 +23,18 @@ db.serialize(() => {
 
     // Таблица для заказов
     db.run(`
-    CREATE TABLE IF NOT EXISTS orders (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+  CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     firstName TEXT,
     lastName TEXT,
     phoneNumber TEXT,
     address TEXT,
     products TEXT,
-    status TEXT
-    );
-  `);
+    status TEXT,
+    deliveryMethod TEXT,      -- Новый столбец для способа доставки
+    paymentMethod TEXT        -- Новый столбец для способа оплаты
+  );
+`);
     db.run(`
   CREATE TABLE IF NOT EXISTS order_products (
     order_id INTEGER,

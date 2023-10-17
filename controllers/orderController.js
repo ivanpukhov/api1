@@ -2,14 +2,22 @@ const Order = require('../models/Order');
 
 const orderController = {
     createOrder(req, res) {
-        const {firstName, lastName, phoneNumber, address, products} = req.body;
-        if (!firstName || !lastName || !phoneNumber || !address || !products || !products.length) {
+        const {firstName, lastName, phoneNumber, address, products, deliveryMethod, paymentMethod} = req.body;
+        if (!firstName || !lastName || !phoneNumber || !address || !products || !products.length || !deliveryMethod || !paymentMethod) {
             return res.status(400).json({error: 'All fields are required'});
         }
 
-        Order.create(req.body, function (err) {
+        Order.create({
+            firstName,
+            lastName,
+            phoneNumber,
+            address,
+            products,
+            deliveryMethod,
+            paymentMethod
+        }, function (err) {
             if (err) {
-                console.error("Error occurred:", err);  // Добавьте эту строку
+                console.error("Error occurred:", err);
                 return res.status(500).json({error: 'Failed to create order'});
             }
             res.status(200).json({message: 'Order created successfully'});
