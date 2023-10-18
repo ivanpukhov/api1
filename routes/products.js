@@ -9,9 +9,13 @@ router.post('/many', authController.authenticateJWT, productController.createPro
 router.get('/', productController.getAllProducts);
 router.get('/top', productController.getTopProducts);
 router.get('/top/:category', productController.getTopProductsByCategory);
+router.get('/categories', productController.getAllCategories);  // новый роут
+
 router.get('/category/:category', productController.getCategoryProductsByCategory);
 router.get('/search', productController.searchProducts);
 router.get('/searchInCategory', productController.searchProductsInCategory);
+router.get('/category/:category/subcategories', productController.getAllSubcategoriesByCategory);
+router.get('/subcategory/:subcategory/products', productController.getProductsBySubcategory);
 
 router.get('/:id', productController.getProductById);
 router.put('/:id', authController.authenticateJWT, productController.updateProduct);

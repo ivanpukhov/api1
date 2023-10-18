@@ -137,6 +137,30 @@ const productController = {
         }
     },
 
+    getAllSubcategoriesByCategory(req, res) {
+        const category = req.params.category;
+        Product.getAllSubcategoriesByCategory(category, function(err, subcategories) {
+            if (err) return res.status(500).json({ error: 'Failed to fetch subcategories' });
+            res.status(200).json(subcategories);
+        });
+    },
+
+    getAllCategories(req, res) {
+        Product.getAllCategories(function(err, categories) {
+            if (err) return res.status(500).json({ error: 'Failed to fetch categories' });
+            res.status(200).json(categories);
+        });
+    },
+
+    getProductsBySubcategory(req, res) {
+        const subcategory = req.params.subcategory;
+        Product.getProductsBySubcategory(subcategory, function(err, products) {
+            if (err) return res.status(500).json({ error: 'Failed to fetch products' });
+            res.status(200).json(products);
+        });
+    },
+
+
     async searchProductsInCategory(req, res) {
         const query = req.query.q;
         const category = req.query.category;  // Получаем категорию из запроса

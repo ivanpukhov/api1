@@ -41,6 +41,18 @@ const Product = {
     getCategoryProductsByCategory(category, callback) {
         db.all('SELECT * FROM products WHERE category = ? ORDER BY rating DESC ', [category], callback);
     },
+
+    getByIds(ids, callback) {
+        const placeholders = ids.map(() => '?').join(',');
+        const sql = `SELECT * FROM products WHERE id IN (${placeholders})`;
+        db.all(sql, ids, callback);
+    },
+
+
+    getAllCategories(callback) {
+        db.all('SELECT DISTINCT category FROM products', callback);
+    },
+
     // Elasticsearch methods
     async indexProduct(product) {
         await esClient.index({
@@ -62,9 +74,9 @@ const Product = {
     },
 
 
-    async  search(query) {
+    async search(query) {
         try {
-            console.log("Elasticsearch query being sent:", { index: 'products', q: query });
+            console.log("Elasticsearch query being sent:", {index: 'products', q: query});
             const response = await esClient.search({
                 index: 'products',
                 body: {
@@ -94,9 +106,18 @@ const Product = {
         }
     },
 
+    getAllSubcategoriesByCategory(category, callback) {
+        db.all('SELECT DISTINCT subcategory FROM products WHERE category = ?', [category], callback);
+    },
+
+    getProductsBySubcategory(subcategory, callback) {
+        db.all('SELECT * FROM products WHERE subcategory = ?', [subcategory], callback);
+    },
+
+
     async searchInCategory(query, category) {
         try {
-            console.log("Elasticsearch query being sent:", { index: 'products', q: query, category: category });
+            console.log("Elasticsearch query being sent:", {index: 'products', q: query, category: category});
             const response = await esClient.search({
                 index: 'products',
                 body: {
@@ -113,7 +134,7 @@ const Product = {
                             ],
                             filter: [
                                 {
-                                    term: { "category": category }
+                                    term: {"category": category}
                                 }
                             ]
                         }
@@ -135,10 +156,6 @@ const Product = {
             throw error;
         }
     }
-
-
-
-
 
 
 };
