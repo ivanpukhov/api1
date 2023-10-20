@@ -17,7 +17,6 @@ const Product = {
                     callback(err);
                     return;
                 }
-
                 // Assume productID is the id of the inserted product
                 product.id = this.lastID;  // Update product object with new id
 
