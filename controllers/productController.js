@@ -25,6 +25,7 @@ const productController = {
             return res.status(400).json({ error: 'No products provided' });
         }
 
+
         // Your existing logic to add multiple products
         Product.createMany(products, async function(err) {
             if (err) return res.status(500).json({ error: 'Failed to add products' });

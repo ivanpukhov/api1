@@ -7,7 +7,7 @@ const {getByIds} = require("./Product");  // Подключите функцию
 const Order = {
 
     async create(data, callback) {
-        const sql = 'INSERT INTO orders (firstName, lastName, phoneNumber, address, products, deliveryMethod, paymentMethod) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        const sql = 'INSERT INTO orders (firstName, lastName, phoneNumber, address, products, deliveryMethod, paymentMethod, status) VALUES (?, ?, ?, ?, ?, ?, ?, "1")';
         db.run(sql, [data.firstName, data.lastName, data.phoneNumber, data.address, JSON.stringify(data.products), data.deliveryMethod, data.paymentMethod], async (error) => {
             if (error) {
                 callback(error);

@@ -7,23 +7,24 @@ const users = [
         password: "password"
     }
 ];
-
 exports.login = (req, res) => {
     const { username, password } = req.body;
 
-    // Проверяем, есть ли пользователь с такими данными
+    // Проверка наличия данных
+    if (!username || !password) {
+        return res.status(400).send('Username and password are required');
+    }
+
     const user = users.find(u => u.username === username && u.password === password);
 
     if (user) {
-        // Генерация токена
         const accessToken = jwt.sign({ username: user.username }, 'dfghjkfghjhjkuhn');
         res.json({ accessToken });
     } else {
-        res.send('Username or password incorrect');
+        res.status(401).send('Username or password incorrect');
     }
 };
 
-// Middleware для проверки JWT
 exports.authenticateJWT = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
@@ -31,13 +32,12 @@ exports.authenticateJWT = (req, res, next) => {
         const token = authHeader.split(' ')[1];
         jwt.verify(token, 'dfghjkfghjhjkuhn', (err, user) => {
             if (err) {
-                return res.sendStatus(403);
+                return res.status(403).send('Forbidden: Invalid or expired token');
             }
             req.user = user;
             next();
         });
     } else {
-        res.sendStatus(401);
+        res.status(401).send('Unauthorized: No token provided');
     }
-
 };

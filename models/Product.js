@@ -11,14 +11,34 @@ const Product = {
         const sql = 'INSERT INTO products (name, description, price, subcategory, category, imageUrl, rating) VALUES (?, ?, ?, ?, ?, ?, ?)';
         let completed = 0;
         products.forEach((product) => {
-            db.run(sql, [product.name, product.description, product.price, product.subcategory, product.category, product.imageUrl, product.rating], (err) => {
+            db.run(sql, [product.name, product.description, product.price, product.subcategory, product.category, product.imageUrl, product.rating], async function(err) {
+                if (err) {
+                    // Handle error
+                    callback(err);
+                    return;
+                }
+
+                // Assume productID is the id of the inserted product
+                product.id = this.lastID;  // Update product object with new id
+
+                // Now index the product in Elasticsearch
+                try {
+                    await Product.indexProduct(product);
+                } catch (indexErr) {
+                    // Handle Elasticsearch indexing error
+                    callback(indexErr);
+                    return;
+                }
+
+
                 completed++;
                 if (completed === products.length) {
-                    callback(err);
+                    callback(null);  // No error
                 }
             });
         });
     },
+
     getAll(callback) {
         db.all('SELECT * FROM products', callback);
     },
@@ -57,15 +77,20 @@ const Product = {
     async indexProduct(product) {
         await esClient.index({
             index: 'products',
-            id: product.id,
+            id: product.id.toString(),  // Убедитесь, что id является строкой
             body: {
                 name: product.name,
                 description: product.description,
+                price: product.price,
                 category: product.category,
-                subcategory: product.subcategory
+                subcategory: product.subcategory,
+                imageUrl: product.imageUrl
             }
         });
     },
+
+
+
     async deleteFromIndex(id) {
         await esClient.delete({
             index: 'products',
