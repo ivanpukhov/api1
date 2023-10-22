@@ -1,17 +1,17 @@
-const axios = require('axios');
-
-const send_message = async (products, totalCost, data) => {
+const axios = require("axios");
+const send_message = async (products, totalCost, data, orderId) => {  // Добавьте параметр orderId
     const idInstance = '1101834631';
     const apiTokenInstance = 'f0aafa8020394baea4aa3db58aeb2afb02afca8b0e9b4ce4b5';
     const url = `https://api.green-api.com/waInstance${idInstance}/sendMessage/${apiTokenInstance}`;
 
     const productsList = products.map(product =>
         `
-${product.name} - ${product.price} тенге
+${product.name} - ${product.price} тенге x ${product.quantity} шт. 
 ___
         `
-
     ).join('\n');
+
+    const totalCostWithDiscount = totalCost * 0.95;  // Вычислите итоговую сумму со скидкой
 
     const message = `Новый заказ:
 Товары:
@@ -24,7 +24,10 @@ ${data.firstName + ' ' + data.lastName}
 ${data.phoneNumber}
 
 Итого:
- ${totalCost} -5% = ${totalCost*0.95} тенге
+ ${totalCost} тенге - 5% = ${totalCostWithDiscount} тенге
+
+Ссылка на заказ:
+    https://admin.miko-astana.kz/orders/${orderId}  
 `;
 
     const payload = {

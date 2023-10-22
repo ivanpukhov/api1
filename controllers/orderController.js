@@ -24,6 +24,22 @@ const orderController = {
         });
     },
 
+    deleteOrder(req, res) {
+        Order.delete(req.params.id, function(err) {
+            if (err) return res.status(500).json({error: 'Failed to delete order'});
+            res.status(200).json({message: 'Order deleted successfully'});
+        });
+    },
+
+    updateOrder(req, res) {
+        const {firstName, lastName, phoneNumber, address, products, deliveryMethod, paymentMethod} = req.body;
+        Order.update(req.params.id, {firstName, lastName, phoneNumber, address, products, deliveryMethod, paymentMethod}, function(err) {
+            if (err) return res.status(500).json({error: 'Failed to update order'});
+            res.status(200).json({message: 'Order updated successfully'});
+        });
+    },
+
+
     getAllOrders(req, res) {
         Order.getAll(function (err, orders) {
             if (err) return res.status(500).json({error: 'Failed to fetch orders'});
