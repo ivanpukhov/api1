@@ -31,7 +31,7 @@ ${data.phoneNumber}
 `;
 
     const payload = {
-        chatId: `77073670497@c.us`,
+        chatId: `77066001330@c.us`,
         message: message
     };
 
