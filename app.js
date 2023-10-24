@@ -35,6 +35,8 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
     res.send({ file: req.file });
 });
 
+
+
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

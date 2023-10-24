@@ -31,11 +31,15 @@ db.serialize(() => {
     address TEXT,
     products TEXT,
     status TEXT,
-    deliveryMethod TEXT,      -- Новый столбец для способа доставки
-    paymentMethod TEXT        -- Новый столбец для способа оплаты
-  );
+    deliveryMethod TEXT,
+    paymentMethod TEXT,
+    totalCost REAL,  
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP  
+
+   );
 `);
     db.run(`
+
   CREATE TABLE IF NOT EXISTS order_products (
     order_id INTEGER,
     product_id INTEGER,
@@ -43,6 +47,7 @@ db.serialize(() => {
     FOREIGN KEY (order_id) REFERENCES orders (id),
     FOREIGN KEY (product_id) REFERENCES products (id)
   );
+  
 `);
 });
 

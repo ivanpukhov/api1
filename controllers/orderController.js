@@ -57,6 +57,64 @@ const orderController = {
             res.status(200).json({message: 'Order status updated successfully'});
         });
     },
+
+    async getStatistics(req, res) {
+        try {
+            const startDate = req.query.startDate;
+            const endDate = req.query.endDate;
+
+            if (!startDate || !endDate) {
+                return res.status(400).json({ error: 'Both startDate and endDate are required' });
+            }
+
+            let totalOrders, revenue, averageCheck, statusCounts;
+
+            await new Promise((resolve) => {
+                Order.getTotalOrders(startDate, endDate, (err, data) => {
+                    if (err) throw err;
+                    totalOrders = data ? data.totalOrders : 0;
+                    resolve();
+                });
+            });
+
+
+            await new Promise((resolve) => {
+                Order.getRevenueByPeriod(startDate, endDate, (err, data) => {
+                    if (err) throw err;
+                    revenue = data.revenue;
+                    resolve();
+                });
+            });
+
+            await new Promise((resolve) => {
+                Order.getAverageCheckByPeriod(startDate, endDate, (err, data) => {
+                    if (err) throw err;
+                    averageCheck = data.averageCheck;
+                    resolve();
+                });
+            });
+
+            await new Promise((resolve) => {
+                Order.getOrderStatusCounts(startDate, endDate, (err, data) => {
+                    if (err) throw err;
+                    statusCounts = data;
+                    resolve();
+                });
+            });
+
+            res.status(200).json({
+                totalOrders: totalOrders || 0,
+                revenue: revenue || 0,
+                averageCheck: averageCheck || 0,
+                statusCounts: statusCounts || {}
+            });
+
+        } catch (err) {
+            res.status(500).json({error: 'Failed to fetch statistics'});
+        }
+
+    }
+
 };
 
 module.exports = orderController;

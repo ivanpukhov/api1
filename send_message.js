@@ -11,7 +11,6 @@ ___
         `
     ).join('\n');
 
-    const totalCostWithDiscount = totalCost * 0.95;  // Вычислите итоговую сумму со скидкой
 
     const message = `Новый заказ:
 Товары:
@@ -23,8 +22,7 @@ ${data.firstName + ' ' + data.lastName}
 Адрес: ${data.address}
 ${data.phoneNumber}
 
-Итого:
- ${totalCost} тенге - 5% = ${totalCostWithDiscount} тенге
+Итого: - 5% = ${totalCost} тенге
 
 Ссылка на заказ:
     https://admin.miko-astana.kz/orders/${orderId}  
