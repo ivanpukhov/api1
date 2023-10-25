@@ -19,8 +19,11 @@ const Product = {
                 }
                 // Assume productID is the id of the inserted product
                 product.id = this.lastID;  // Update product object with new id
+                console.log('Product ID:', product.id);
 
                 // Now index the product in Elasticsearch
+                console.log('Product before indexing:', product);
+
                 try {
                     await Product.indexProduct(product);
                 } catch (indexErr) {
@@ -28,6 +31,7 @@ const Product = {
                     callback(indexErr);
                     return;
                 }
+                console.log('Product after indexing:', product);
 
 
                 completed++;
@@ -72,12 +76,14 @@ const Product = {
         db.all('SELECT DISTINCT category FROM products', callback);
     },
 
-    // Elasticsearch methods
+    // Elasticsearch method
+    // s
     async indexProduct(product) {
         await esClient.index({
             index: 'products',
             id: product.id.toString(),  // Убедитесь, что id является строкой
             body: {
+                id: product.id,  // Добавьте это поле
                 name: product.name,
                 description: product.description,
                 price: product.price,

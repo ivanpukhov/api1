@@ -3,8 +3,8 @@ const jwt = require('jsonwebtoken');
 // Заранее определённые данные для входа
 const users = [
     {
-        username: "admin",
-        password: "password"
+        username: "mikoadmin",
+        password: "mikoadmin"
     }
 ];
 exports.login = (req, res) => {
