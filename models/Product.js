@@ -2,6 +2,10 @@ const db = require('../config/database');
 const esClient = require('../config/elasticsearch'); // Подключение Elasticsearch клиента
 
 const Product = {
+updateAvailability(id, isAvailable, callback) {
+    const sql = 'UPDATE products SET isAvailable = ? WHERE id = ?';
+    db.run(sql, [isAvailable, id], callback);
+},
     create(data, callback) {
         const isAvailable = data.isAvailable !== undefined ? data.isAvailable : true;
         const sql = 'INSERT INTO products (name, description, price, subcategory, category, imageUrl, rating, isAvailable) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
@@ -49,9 +53,38 @@ const Product = {
         db.get('SELECT * FROM products WHERE id = ?', [id], callback);
     },
     update(id, data, callback) {
-        const sql = 'UPDATE products SET name = ?, description = ?, price = ?, subcategory = ?, category = ?, imageUrl = ?, rating = ? WHERE id = ?';
-        db.run(sql, [data.name, data.description, data.price, data.subcategory, data.category, data.imageUrl, data.rating, id], callback);
-    },
+    // Получаем текущие значения из БД
+    db.get('SELECT * FROM products WHERE id = ?', [id], (err, product) => {
+        if (err) {
+            callback(err);
+            return;
+        }
+
+        // Определяем значение isAvailable
+        let isAvailableValue;
+        if (data.isAvailable === undefined) {
+            isAvailableValue = (product.isAvailable === undefined || product.isAvailable === null) ? 1 : product.isAvailable;
+        } else {
+            isAvailableValue = data.isAvailable;
+        }
+
+        // Подготовка обновленных данных
+        const updatedProduct = {
+            name: data.name || product.name,
+            description: data.description || product.description,
+            price: data.price || product.price,
+            subcategory: data.subcategory || product.subcategory,
+            category: data.category || product.category,
+            imageUrl: data.imageUrl || product.imageUrl,
+            rating: data.rating || product.rating,
+            isAvailable: isAvailableValue
+        };
+
+        const sql = 'UPDATE products SET name = ?, description = ?, price = ?, subcategory = ?, category = ?, imageUrl = ?, rating = ?, isAvailable = ? WHERE id = ?';
+        db.run(sql, [updatedProduct.name, updatedProduct.description, updatedProduct.price, updatedProduct.subcategory, updatedProduct.category, updatedProduct.imageUrl, updatedProduct.rating, updatedProduct.isAvailable, id], callback);
+    });
+},
+
     delete(id, callback) {
         db.run('DELETE FROM products WHERE id = ?', [id], callback);
     },
@@ -113,7 +146,7 @@ const Product = {
                     query: {
                         multi_match: {
                             query: query,
-                            fields: ['name^5', 'description'],
+                            fields: ['name^5', 'description', 'category', 'subcategory'],
                             fuzziness: 'AUTO'
                         }
                     },

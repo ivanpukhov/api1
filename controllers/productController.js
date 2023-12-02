@@ -2,6 +2,19 @@ const Product = require('../models/Product');
 const esClient = require('../config/elasticsearch');  // Import Elasticsearch client
 
 const productController = {
+async updateProductAvailability(req, res) {
+    const { id } = req.params;
+    const { isAvailable } = req.body;
+
+    try {
+        Product.updateAvailability(id, isAvailable, function(err) {
+            if (err) return res.status(500).json({ error: 'Failed to update product availability' });
+            res.status(200).json({ message: 'Product availability updated successfully' });
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'An error occurred' });
+    }
+},
     // Create a single product
     async createProduct(req, res) {
         try {

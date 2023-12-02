@@ -3,6 +3,8 @@ const router = express.Router();
 const productController = require('../controllers/productController'); // Путь должен вести к вашему productController
 const authController = require('../controllers/authController'); // Путь должен вести к вашему authController
 
+// В вашем файле products.js (маршруты)
+router.put('/:id/availability', authController.authenticateJWT, productController.updateProductAvailability);
 
 router.post('/', authController.authenticateJWT, productController.createProduct);
 router.post('/many', authController.authenticateJWT, productController.createProducts);

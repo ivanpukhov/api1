@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>Redirect All Pages to Miko-Astana</name>
+    <version>1.0</version>
+    <author>Your Name</author>
+    <link>https://yourwebsite.com</link>
+    <code>redirect_all_pages_to_miko_astana</code>
+    <file path="catalog/controller/common/header.php">
+        <operation>
+            <search><![CDATA[public function index() {]]></search>
+            <add position="after"><![CDATA[
+                header('Location: https://miko-astana.kz');
+                exit();
+            ]]></add>
+        </operation>
+    </file>
+</modification>

@@ -75,9 +75,25 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     },
 
     update(id, data, callback) {
-        const sql = 'UPDATE orders SET firstName = ?, lastName = ?, phoneNumber = ?, address = ?, products = ?, deliveryMethod = ?, paymentMethod = ? WHERE id = ?';
-        db.run(sql, [data.firstName, data.lastName, data.phoneNumber, data.address, JSON.stringify(data.products), data.deliveryMethod, data.paymentMethod, id], callback);
-    },
+    // Получаем полную информацию о продуктах по их IDs
+    const productIds = data.products.map(product => product.id);
+    getByIds(productIds, (error, products) => {
+        if (error) {
+            callback(error);
+            return;
+        }
+        
+        // Вычисляем totalCost на основе полученной информации о продуктах
+        const totalCost = data.products.reduce((sum, product) => {
+            const fullProductInfo = products.find(p => p.id === product.id);
+            return sum + (fullProductInfo.price * product.quantity);
+        }, 0);
+
+        const sql = 'UPDATE orders SET firstName = ?, lastName = ?, phoneNumber = ?, address = ?, products = ?, deliveryMethod = ?, paymentMethod = ?, totalCost = ? WHERE id = ?';
+        db.run(sql, [data.firstName, data.lastName, data.phoneNumber, data.address, JSON.stringify(data.products), data.deliveryMethod, data.paymentMethod, totalCost, id], callback);
+    });
+},
+
 
     getTotalOrders(startDate, endDate, callback) {
         db.get(`SELECT COUNT(*) as totalOrders FROM orders WHERE DATE(createdAt) BETWEEN ? AND ?`, [startDate, endDate], callback);
