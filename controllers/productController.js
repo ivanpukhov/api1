@@ -41,7 +41,8 @@ async updateProductAvailability(req, res) {
 
         // Your existing logic to add multiple products
         Product.createMany(products, async function(err) {
-            if (err) return res.status(500).json({ error: 'Failed to add products' });
+	    console.log(err);
+            if (err) return res.status(500).json({ error: 'Failed to add products' + err.message  });
 
             // Index all new products to Elasticsearch
             for (const product of products) {
