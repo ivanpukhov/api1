@@ -24,7 +24,10 @@ const upload = multer({ storage: storage });
 
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
-app.use('/api/uploads', express.static('uploads'));
+app.use('/api/uploads', function(req, res, next) {
+    console.log(`Получен запрос к ${req.path}`);
+    next();
+}, express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
