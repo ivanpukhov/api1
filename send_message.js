@@ -2,7 +2,7 @@ const axios = require("axios");
 
 const send_message = async (products, totalCost, data, orderId) => {
     const idInstance = '1101834631';
-    const apiTokenInstance = 'f0aafa8020394baea4aa3db58aeb2afb02afca8b0e9b4ce4b5';
+    const apiTokenInstance = 'b6a5812c82f049d28b697b802aa81667c54a6842696c4aac87';
     const url = `https://api.green-api.com/waInstance${idInstance}/sendMessage/${apiTokenInstance}`;
 
     const productsList = products.map(product =>
