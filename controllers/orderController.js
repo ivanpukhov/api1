@@ -73,7 +73,7 @@ const orderController = {
                 return res.status(400).json({ error: 'Both startDate and endDate are required' });
             }
 
-            let totalOrders, revenue, averageCheck, statusCounts;
+            let totalOrders, revenue, averageCheck, statusCounts, orders;
 
             await new Promise((resolve, reject) => {
                 Order.getTotalOrders(startDate, endDate, (err, data) => {
@@ -107,11 +107,21 @@ const orderController = {
                 });
             });
 
+            // Получение информации о заказах за указанный период
+            await new Promise((resolve, reject) => {
+                Order.getOrdersByPeriod(startDate, endDate, (err, data) => {
+                    if (err) return reject(err);
+                    orders = data;
+                    resolve();
+                });
+            });
+
             res.status(200).json({
                 totalOrders: totalOrders || 0,
                 revenue: revenue || 0,
                 averageCheck: averageCheck || 0,
-                statusCounts: statusCounts || {}
+                statusCounts: statusCounts || {},
+                orders: orders || []
             });
 
         } catch (err) {

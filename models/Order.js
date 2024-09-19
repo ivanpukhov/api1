@@ -75,24 +75,24 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     },
 
     update(id, data, callback) {
-    // Получаем полную информацию о продуктах по их IDs
-    const productIds = data.products.map(product => product.id);
-    getByIds(productIds, (error, products) => {
-        if (error) {
-            callback(error);
-            return;
-        }
-        
-        // Вычисляем totalCost на основе полученной информации о продуктах
-        const totalCost = data.products.reduce((sum, product) => {
-            const fullProductInfo = products.find(p => p.id === product.id);
-            return sum + (fullProductInfo.price * product.quantity);
-        }, 0);
+        // Получаем полную информацию о продуктах по их IDs
+        const productIds = data.products.map(product => product.id);
+        getByIds(productIds, (error, products) => {
+            if (error) {
+                callback(error);
+                return;
+            }
 
-        const sql = 'UPDATE orders SET firstName = ?, lastName = ?, phoneNumber = ?, address = ?, products = ?, deliveryMethod = ?, paymentMethod = ?, totalCost = ? WHERE id = ?';
-        db.run(sql, [data.firstName, data.lastName, data.phoneNumber, data.address, JSON.stringify(data.products), data.deliveryMethod, data.paymentMethod, totalCost, id], callback);
-    });
-},
+            // Вычисляем totalCost на основе полученной информации о продуктах
+            const totalCost = data.products.reduce((sum, product) => {
+                const fullProductInfo = products.find(p => p.id === product.id);
+                return sum + (fullProductInfo.price * product.quantity);
+            }, 0);
+
+            const sql = 'UPDATE orders SET firstName = ?, lastName = ?, phoneNumber = ?, address = ?, products = ?, deliveryMethod = ?, paymentMethod = ?, totalCost = ? WHERE id = ?';
+            db.run(sql, [data.firstName, data.lastName, data.phoneNumber, data.address, JSON.stringify(data.products), data.deliveryMethod, data.paymentMethod, totalCost, id], callback);
+        });
+    },
 
 
     getTotalOrders(startDate, endDate, callback) {
@@ -120,6 +120,47 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         const sql = 'UPDATE orders SET status = ? WHERE id = ?';
         db.run(sql, [status, id], callback);
     },
+    getOrdersByPeriod(startDate, endDate, callback) {
+        const sql = `SELECT * FROM orders WHERE DATE(createdAt) BETWEEN ? AND ?`;
+        db.all(sql, [startDate, endDate], (err, rows) => {
+            if (err) {
+                callback(err);
+                return;
+            }
+
+            // Извлекаем все productIds из заказов
+            const allProductIds = rows.reduce((acc, order) => {
+                const productIds = JSON.parse(order.products).map(product => product.id);
+                return acc.concat(productIds);
+            }, []);
+
+            // Получаем полную информацию о продуктах по их ID
+            getByIds([...new Set(allProductIds)], (error, products) => {
+                if (error) {
+                    callback(error);
+                    return;
+                }
+
+                // Преобразуем строку продуктов обратно в объект и добавляем название продукта
+                const orders = rows.map(order => {
+                    const orderProducts = JSON.parse(order.products).map(product => {
+                        const fullProductInfo = products.find(p => p.id === product.id);
+                        return {
+                            ...product,
+                            name: fullProductInfo ? fullProductInfo.name : 'Unknown Product',
+                        };
+                    });
+
+                    return {
+                        ...order,
+                        products: orderProducts
+                    };
+                });
+
+                callback(null, orders);
+            });
+        });
+    }
 
 
 };
