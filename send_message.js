@@ -53,6 +53,7 @@ ${data.phoneNumber}
         try {
             const response = await axios.post(url, payload, {headers});
             console.log(`Сообщение отправлено на ${chatId}:`, response.data);
+            console.log(message)
         } catch (error) {
             console.log(`Ошибка при отправке на ${chatId}:`, error);
         }
