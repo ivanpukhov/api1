@@ -1,9 +1,17 @@
 const axios = require("axios");
 
-const send_message = async (products, totalCost, data, orderId) => {
+const send_message = async (products, data, orderId) => {
     const idInstance = '1101834631';
     const apiTokenInstance = 'b6a5812c82f049d28b697b802aa81667c54a6842696c4aac87';
     const url = `https://api.green-api.com/waInstance${idInstance}/sendMessage/${apiTokenInstance}`;
+
+    // Расчет общей стоимости с учетом 5% скидки для товаров не из категории "discont"
+    const totalCostWithDiscount = products.reduce((acc, product) => {
+        if (product.category === 'discont') {
+            return acc + product.price * product.quantity; // Товар без скидки
+        }
+        return acc + (product.price * product.quantity * 0.95); // Применение 5% скидки
+    }, 0);
 
     const productsList = products.map(product =>
         `
@@ -22,7 +30,7 @@ ${data.firstName + ' ' + data.lastName}
 Адрес: ${data.address}
 ${data.phoneNumber}
 
-Итого: - 5% = ${totalCost} тенге
+Итого: ${totalCostWithDiscount.toFixed(2)} тенге (учтена скидка -5% для товаров, не входящих в категорию "discont")
 
 Ссылка на заказ:
     https://admin.miko-astana.kz/orders/${orderId}  
@@ -51,4 +59,4 @@ ${data.phoneNumber}
     }
 };
 
-module.exports = send_message;  // Экспорт функции send_message для использования в других файлах
+module.exports = send_message;
