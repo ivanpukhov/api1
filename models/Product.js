@@ -8,35 +8,29 @@ updateAvailability(id, isAvailable, callback) {
 },
     create(data, callback) {
         const isAvailable = data.isAvailable !== undefined ? data.isAvailable : true;
-        const sql = 'INSERT INTO products (name, description, price, subcategory, category, imageUrl, rating, isAvailable) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-        db.run(sql, [data.name, data.description, data.price, data.subcategory, data.category, data.imageUrl, 1, isAvailable], callback);
+        const discont = data.discont !== undefined ? data.discont : 5;  // Устанавливаем 5% по умолчанию
+        const sql = 'INSERT INTO products (name, description, price, subcategory, category, imageUrl, rating, isAvailable, discont) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        db.run(sql, [data.name, data.description, data.price, data.subcategory, data.category, data.imageUrl, 1, isAvailable, discont], callback);
     },
+
     createMany(products, callback) {
-        const sql = 'INSERT INTO products (name, description, price, subcategory, category, imageUrl, rating) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        const sql = 'INSERT INTO products (name, description, price, subcategory, category, imageUrl, rating, discont) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
         let completed = 0;
         products.forEach((product) => {
-            db.run(sql, [product.name, product.description, product.price, product.subcategory, product.category, product.imageUrl, product.rating], async function(err) {
+            const discont = product.discont !== undefined ? product.discont : 5;  // Устанавливаем 5% по умолчанию
+            db.run(sql, [product.name, product.description, product.price, product.subcategory, product.category, product.imageUrl, product.rating, discont], async function(err) {
                 if (err) {
-                    // Handle error
                     callback(err);
                     return;
                 }
-                // Assume productID is the id of the inserted product
-                product.id = this.lastID;  // Update product object with new id
-                console.log('Product ID:', product.id);
-
-                // Now index the product in Elasticsearch
-                console.log('Product before indexing:', product);
+                product.id = this.lastID;
 
                 try {
                     await Product.indexProduct(product);
                 } catch (indexErr) {
-                    // Handle Elasticsearch indexing error
                     callback(indexErr);
                     return;
                 }
-                console.log('Product after indexing:', product);
-
 
                 completed++;
                 if (completed === products.length) {
